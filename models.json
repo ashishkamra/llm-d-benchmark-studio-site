@@ -1,0 +1,6 @@
+[
+  {"id":"Qwen/Qwen3-4B","revision":"1cfa9a7208912126459214e8b04321603b3df60c","weights_gib":7.5,"context":32768,"layers":36,"kv_heads":8,"head_dim":128,"tp":[1,2,4,8],"validated":false},
+  {"id":"Qwen/Qwen3-8B","revision":"b968826d9c46dd6066d109eabc6255188de91218","weights_gib":15.3,"context":32768,"layers":32,"kv_heads":8,"head_dim":128,"tp":[1,2,4,8],"validated":false},
+  {"id":"Qwen/Qwen3-14B","revision":"40c069824f4251a91eefaf281ebe4c544efd3e18","weights_gib":27.6,"context":32768,"layers":40,"kv_heads":8,"head_dim":128,"tp":[1,2,4,8],"validated":false},
+  {"id":"Qwen/Qwen3-32B","revision":"9216db5781bf21249d130ec9da846c4624c16137","weights_gib":61.1,"context":32768,"layers":64,"kv_heads":8,"head_dim":128,"tp":[1,2,4,8],"validated":false}
+]

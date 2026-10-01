@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "llm_d": {"version": "v0.10.0", "commit": "f22bbaf3173a326d214f06d7c769b905cb3f489a"},
+  "router": {"version": "v0.11.0", "commit": "a5cbe600ebade00cf3e9885beaf2bfacddeabce1", "chart": "oci://ghcr.io/llm-d/charts/llm-d-router-standalone", "image": "ghcr.io/llm-d/llm-d-router-endpoint-picker:v0.11.0"},
+  "guidellm": {"version": "0.8.0", "commit": "4545d7cdbab8753d780fa90083259e5a840b6782", "image": "ghcr.io/vllm-project/guidellm:v0.8.0"},
+  "runtime": {"version": "0.30.0", "image": "docker.io/vllm/vllm-openai:v0.30.0"},
+  "gateway_api": "v1.5.1",
+  "inference_extension": "v1.5.0",
+  "policy": "upstream default-plugins.yaml; no scorer overrides",
+  "image_policy": "Release tags are explicit. Runtime and client images may use verified registry digests; EPP follows the pinned chart image tag. Retain runtime imageID evidence; tags are not cryptographic immutability."
+}
