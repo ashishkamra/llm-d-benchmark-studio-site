@@ -29,7 +29,9 @@ without a server or network access.
 1. **Hardware:** choose GPU memory, approved GPU budget, and available slots per
    node. Optionally download `discovery.py`, run it locally with
    `python3 discovery.py --context YOUR_CONTEXT > inventory.json`, and import the
-   inventory. Discovery is read-only and does not reserve resources.
+   inventory. Discovery is read-only and does not reserve resources. It honors
+   `KUBECONFIG`; see [Select your kubeconfig and context](#select-your-kubeconfig-and-context)
+   to choose a non-default configuration file before running it.
 2. **Deployment:** auto-select a catalog model or choose one explicitly. Auto
    prefers the largest feasible model with at least two replicas, then the
    lowest feasible TP for that model. It may use TP4 on eight 24-GiB GPUs rather
@@ -107,18 +109,48 @@ exported reports. No `.env` or API key is needed for the static application.
 
 ## Execute the exported bundle
 
-Unzip it into a dedicated local directory. Run these commands **there**, replacing
-`YOUR_CONTEXT` with the intended kubeconfig context:
+Unzip it into a dedicated local directory. Run the following commands **there**,
+in a terminal on the machine with Python, `kubectl`, Helm, and cluster access.
+
+### Select your kubeconfig and context
+
+Use a trusted kubeconfig file already present on that machine. Set its absolute
+path, list the contexts in that file, then replace `your-context-name` with the
+intended entry from the **NAME** column:
+
+```bash
+export KUBECONFIG="/absolute/path/to/your/kubeconfig"
+kubectl config get-contexts
+CONTEXT="your-context-name"
+```
+
+- Both `kubectl` and Helm inherit the exported `KUBECONFIG` from the runner.
+  The discovery helper uses the same environment variable.
+- If `KUBECONFIG` is unset, the standard default is `~/.kube/config`; omit the
+  `export` line to use that file when no overriding variable is already set.
+- `--context` selects a **context name**, not a file path. The bundle's `run.sh`
+  and `runner.py` do **not** have a `--kubeconfig` flag; use the environment
+  variable instead. You do not need to change your kubeconfig's current context.
+- Keep the kubeconfig and its credentials local. Do not upload them to the
+  website, put them in `experiment.yaml`, or include them in shared bundles,
+  reports, or Git commits. Kubeconfigs can invoke authentication plugins, so
+  only use files from trusted sources.
+- Continue in the same terminal. In a new terminal, repeat the kubeconfig and
+  `CONTEXT` assignments before collecting, resuming, or cleaning up a run.
+
+### Review, preflight, and run
 
 ```bash
 bash run.sh render
-bash run.sh --context YOUR_CONTEXT preflight
-bash run.sh --context YOUR_CONTEXT run --confirm-context YOUR_CONTEXT
+bash run.sh --context "$CONTEXT" preflight
+bash run.sh --context "$CONTEXT" run --confirm-context "$CONTEXT"
 ```
 
-`render` and `report` are cluster-free. Preflight is read-only. Every mutating
+`render` and `report` are cluster-free and do not require a kubeconfig.
+Preflight is read-only. Every mutating
 action—including collection, which creates a temporary Pod—requires explicit
-context confirmation. The runner refuses to overwrite resources lacking this
+context confirmation: `--confirm-context` must match the selected context.
+The runner refuses to overwrite resources lacking this
 experiment's ownership label. Use a new dedicated namespace; do not relabel
 someone else's resources to bypass the guard.
 
@@ -134,9 +166,9 @@ For interrupted experiments:
 
 ```bash
 bash run.sh status
-bash run.sh --context YOUR_CONTEXT collect --confirm-context YOUR_CONTEXT
+bash run.sh --context "$CONTEXT" collect --confirm-context "$CONTEXT"
 bash run.sh report
-bash run.sh --context YOUR_CONTEXT run --resume --confirm-context YOUR_CONTEXT
+bash run.sh --context "$CONTEXT" run --resume --confirm-context "$CONTEXT"
 ```
 
 Completed cells are skipped on resume; partial cells are retried explicitly.
@@ -156,9 +188,9 @@ namespace or results directory.
 After reviewing/collecting results:
 
 ```bash
-bash run.sh --context YOUR_CONTEXT cleanup --confirm-context YOUR_CONTEXT
+bash run.sh --context "$CONTEXT" cleanup --confirm-context "$CONTEXT"
 # Only when permanently discarding the retained cluster results:
-bash run.sh --context YOUR_CONTEXT cleanup --confirm-context YOUR_CONTEXT --delete-results
+bash run.sh --context "$CONTEXT" cleanup --confirm-context "$CONTEXT" --delete-results
 ```
 
 Cleanup preserves the namespace and, unless explicitly requested, the results

@@ -29,7 +29,28 @@ function update() {
       for(const [name,obj]of Object.entries(manifests(experiment,t))) bundle[`manifests/tp${t.tp}/${name}`]=yaml(obj);
     });
     bundle['run.sh']='#!/usr/bin/env bash\nset -euo pipefail\nROOT="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"\nexec python3 "$ROOT/runner.py" --experiment "$ROOT/experiment.yaml" "$@"\n';
-    bundle['README.txt']='llm-d Benchmark Studio\n\nRead the included README.md for prerequisites, methodology and limitations.\n\n1. Review experiment.yaml and manifests/.\n2. bash run.sh --context YOUR_CONTEXT preflight\n3. bash run.sh --context YOUR_CONTEXT run --confirm-context YOUR_CONTEXT\n4. If interrupted: bash run.sh --context YOUR_CONTEXT collect --confirm-context YOUR_CONTEXT\n5. bash run.sh report\n\nResults: results/report.html and results/report-data.json. Import the latter or results/results.zip into the UI.\nCPU-only Jobs generate datasets and run GuideLLM. Install the pinned InferencePool CRD first; the helper never installs cluster-wide dependencies. Credentials remain in your kubeconfig and optional existing Secret <experiment>-hf (key token). Cleanup preserves the results PVC unless --delete-results is explicitly passed.\nNo GPU-cluster integration run has yet validated this new recipe; inspect and test before relying on it.\n';
+    bundle['README.txt']=`llm-d Benchmark Studio
+
+Read the included README.md for prerequisites, methodology and limitations.
+Run these commands in the unzipped bundle directory, in the same terminal.
+
+1. Review experiment.yaml and manifests/.
+2. Select a trusted local kubeconfig and a context from its NAME column:
+   export KUBECONFIG="/absolute/path/to/your/kubeconfig"
+   kubectl config get-contexts
+   CONTEXT="your-context-name"
+3. bash run.sh --context "$CONTEXT" preflight
+4. bash run.sh --context "$CONTEXT" run --confirm-context "$CONTEXT"
+5. If interrupted: bash run.sh --context "$CONTEXT" collect --confirm-context "$CONTEXT"
+6. bash run.sh report
+
+kubectl, Helm, and the discovery helper inherit KUBECONFIG. If it is unset, the standard default is ~/.kube/config. The runner has no --kubeconfig flag; --context takes a context name, not a file path. Repeat the variable assignments in a new terminal. Keep kubeconfigs local; never upload them to the UI or include them in shared bundles or reports.
+
+Preflight is read-only. Cluster mutations require --confirm-context to match the selected context. Local render and report commands need no kubeconfig.
+Results: results/report.html and results/report-data.json. Import the latter or results/results.zip into the UI.
+CPU-only Jobs generate datasets and run GuideLLM. Install the pinned InferencePool CRD first; the helper never installs cluster-wide dependencies. Credentials remain in your kubeconfig and optional existing Secret <experiment>-hf (key token). Cleanup preserves the results PVC unless --delete-results is explicitly passed.
+No GPU-cluster integration run has yet validated this new recipe; inspect and test before relying on it.
+`;
     const selected=$('artifact-select').value;
     $('artifact-select').replaceChildren();
     Object.keys(bundle).forEach(name=>{
